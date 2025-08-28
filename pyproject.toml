@@ -18,7 +18,7 @@ keywords = ["schema.org", "pydantic"]
 [tool.poetry.dependencies]
 pydantic = "^1.8.2"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 ruff = "^0.12.0"
 
 [build-system]
