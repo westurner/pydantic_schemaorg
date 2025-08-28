@@ -2,3 +2,4 @@ venv
 .idea
 dist
 src/circ_import
+__pycache__/
