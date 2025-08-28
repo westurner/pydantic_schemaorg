@@ -96,11 +96,11 @@ class ISO8601Date(str):
         return date
 
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
+    def __get_pydantic_json_schema__(cls, field_schema: Dict[str, Any]) -> None:
         update_not_none(field_schema, minLength=cls.min_length, maxLength=cls.max_length, format='ISO8601')
 
     @classmethod
-    def __get_validators__(cls) -> 'CallableGenerator':
+    def __get_pydantic_core_schema__(cls) -> 'CallableGenerator':
         yield cls.validate
 
     def validate_iso_date(self, value: Any):

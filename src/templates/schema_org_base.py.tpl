@@ -2,6 +2,7 @@ from datetime import time, datetime, date
 from decimal import Decimal
 from typing import Any, Optional, ForwardRef, List, Union
 
+from pydantic import ConfigDict
 from pydantic.v1 import BaseModel, Field, StrictBool, AnyUrl, StrictInt, StrictFloat
 from pydantic.v1.typing import update_model_forward_refs
 
@@ -31,8 +32,7 @@ class SchemaOrgBase(BaseModel):
         }
         return super().json(*args, **dict(defaults, **kwargs))
 
-    class Config:
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
 
     @classmethod
@@ -60,7 +60,7 @@ class SchemaOrgBase(BaseModel):
         return localns
 
     @classmethod
-    def update_forward_refs(cls, **localns: Any) -> None:
+    def model_rebuild(cls, **localns: Any) -> None:
         """
         Try to update ForwardRefs on fields based on this Model, globalns and localns.
         """

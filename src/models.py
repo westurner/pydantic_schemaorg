@@ -1,6 +1,7 @@
 from typing import Optional, List
 
-from pydantic.v1 import BaseModel, validator
+from pydantic.v1 import BaseModel
+from pydantic import field_validator
 
 
 class PydanticBase(BaseModel):
@@ -8,7 +9,7 @@ class PydanticBase(BaseModel):
     description: str
     valid_name: Optional[str] = None
 
-    @validator("valid_name", always=True)
+    @field_validator("valid_name", always=True)
     def ab(cls, v, values) -> str:
         if not values["name"]:
             raise ValueError()
@@ -48,7 +49,7 @@ class PydanticClass(PydanticBase):
     forward_refs: List[Import] = []
     filename: str = ""
 
-    @validator("filename", always=True)
+    @field_validator("filename", always=True)
     def filename_val(cls, v, values) -> str:
         if not values["valid_name"]:
             raise ValueError()
