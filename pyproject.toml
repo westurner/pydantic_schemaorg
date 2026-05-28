@@ -23,6 +23,9 @@ black = { version = "^21.11b1", python = "^3.8" }
 pytest = "^9.0.3"
 pytest-cov = "^7.1.0"
 
+[tool.pytest.ini_options]
+addopts = "--ignore=src/schema"
+
 [build-system]
 requires = [
     "setuptools >= 35.0.2",
