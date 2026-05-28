@@ -5,7 +5,8 @@ jinja_env = jinja2.Environment(keep_trailing_newline=True)
 
 # jinja2 filter format long descriptions from schema.org
 def format_description(_input: str, max_width=70):
-    formatted_input = _input.replace('"', '\\"')
+    formatted_input = _input.replace('\\', '\\\\')
+    formatted_input = formatted_input.replace('"', '\\"')
     lines: [[str]] = [[]]
     splitted_input: [str] = formatted_input.split()
     cursor, word_cursor = 0, 0
