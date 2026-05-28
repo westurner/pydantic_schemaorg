@@ -33,3 +33,12 @@ print(scholarly_article.json())
 ```
 {"@type": "ScholarlyArticle", "url": "https://github.com/lexiq-legal/pydantic_schemaorg", "sameAs": "https://github.com/lexiq-legal/pydantic_schemaorg", "copyrightNotice": "Free to use under the MIT license", "dateCreated": "15-12-2021"}
 ```
+
+## TODO
+- Fix 'Optional' being passed bug
+- Sort properties alphabetically so that there is a stable sort to diff
+- Is it necessary to have two loops to load_type, load_type+write_type?
+  - thinking was "maybe that's why Thing isn't defined yet" in one of the failing tests
+- Remove `+from typing import TYPE_CHECKING, Literal` if Literal is unnecessary
+- Test coverage
+- 

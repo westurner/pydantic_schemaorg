@@ -1,5 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Any, List, Optional, Union, TYPE_CHECKING
+from pydantic import StrictInt, StrictFloat, AnyUrl
+from datetime import date, datetime, time
+from decimal import Decimal
+from pydantic_schemaorg.ISO8601.ISO8601Date import ISO8601Date
+from pydantic import Field
 
 from typing import List, Optional, Union
 from pydantic import AnyUrl
@@ -16,7 +22,14 @@ class BankAccount(FinancialProduct):
     See: https://schema.org/BankAccount
     Model depth: 5
     """
-    type_: str = Field(default="BankAccount", alias='@type', const=True)
+    valid_name: ClassVar[str] = "BankAccount"
+    type_: str = Field("BankAccount", alias='@type')
+    accountOverdraftLimit: Optional[Union[List[Union['MonetaryAmount', str]], 'MonetaryAmount', str]] = Field(
+        default=None,
+        description="An overdraft is an extension of credit from a lending institution when an account reaches"
+     "zero. An overdraft allows the individual to continue withdrawing money even if the account"
+     "has no funds in it. Basically the bank allows people to borrow a set amount of money.",
+    )
     accountMinimumInflow: Optional[Union[List[Union['MonetaryAmount', str]], 'MonetaryAmount', str]] = Field(
         default=None,
         description="A minimum amount that has to be paid in every month.",
@@ -25,15 +38,25 @@ class BankAccount(FinancialProduct):
         default=None,
         description="The type of a bank account.",
     )
-    accountOverdraftLimit: Optional[Union[List[Union['MonetaryAmount', str]], 'MonetaryAmount', str]] = Field(
-        default=None,
-        description="An overdraft is an extension of credit from a lending institution when an account reaches"
-     "zero. An overdraft allows the individual to continue withdrawing money even if the account"
-     "has no funds in it. Basically the bank allows people to borrow a set amount of money.",
-    )
     
+
 
 if TYPE_CHECKING:
     from pydantic_schemaorg.MonetaryAmount import MonetaryAmount
     from pydantic_schemaorg.URL import URL
     from pydantic_schemaorg.Text import Text
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

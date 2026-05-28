@@ -1,17 +1,35 @@
 from __future__ import annotations
+from typing import ClassVar
 
 
 from pydantic import Field
-from pydantic_schemaorg.NewsArticle import NewsArticle
 from pydantic_schemaorg.CriticReview import CriticReview
+from pydantic_schemaorg.NewsArticle import NewsArticle
 
 
-class ReviewNewsArticle(NewsArticle, CriticReview):
+class ReviewNewsArticle(CriticReview, NewsArticle):
     """A [[NewsArticle]] and [[CriticReview]] providing a professional critic's assessment"
      "of a service, product, performance, or artistic or literary work.
 
     See: https://schema.org/ReviewNewsArticle
     Model depth: 5
     """
-    type_: str = Field(default="ReviewNewsArticle", alias='@type', const=True)
+    valid_name: ClassVar[str] = "ReviewNewsArticle"
+    type_: str = Field("ReviewNewsArticle", alias='@type')
     
+
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

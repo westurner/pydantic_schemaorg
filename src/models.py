@@ -1,7 +1,6 @@
 from typing import Optional, List
 
-from pydantic.v1 import BaseModel
-from pydantic import field_validator
+from pydantic import BaseModel, ConfigDict, field_validator
 
 
 class PydanticBase(BaseModel):
@@ -9,24 +8,25 @@ class PydanticBase(BaseModel):
     description: str
     valid_name: Optional[str] = None
 
-    @field_validator("valid_name", always=True)
-    def ab(cls, v, values) -> str:
-        if not values["name"]:
-            raise ValueError()
-        elif values["name"] in {
-            "class",
-            "def",
-            "from",
-            "import",
-            "return",
-            "yield",
-            "True",
-            "False",
-        }:
-            return f"{values['name']}_"
-        if values["name"][0].isdigit():
-            return f"_{values['name']}"
-        return values["name"]
+    from pydantic import model_validator
+
+    @model_validator(mode="before")
+    def set_valid_name(cls, values):
+        name = values.get("name")
+        valid_name = values.get("valid_name")
+        if not name:
+            raise ValueError("name is required")
+        if not valid_name:
+            if name in {"class", "def", "from", "import", "return", "yield", "True", "False"}:
+                valid_name = f"{name}_"
+            elif name[0].isdigit():
+                valid_name = f"_{name}"
+            else:
+                valid_name = name
+            values["valid_name"] = valid_name
+        return values
+
+    model_config = ConfigDict(validate_assignment=True)
 
 
 class PydanticField(PydanticBase):
@@ -49,7 +49,7 @@ class PydanticClass(PydanticBase):
     forward_refs: List[Import] = []
     filename: str = ""
 
-    @field_validator("filename", always=True)
+    @field_validator("filename", mode="after")
     def filename_val(cls, v, values) -> str:
         if not values["valid_name"]:
             raise ValueError()
@@ -66,4 +66,4 @@ class PydanticClass(PydanticBase):
         return values['valid_name']
 
 
-PydanticClass.update_forward_refs()
+#PydanticClass.model_rebuild()

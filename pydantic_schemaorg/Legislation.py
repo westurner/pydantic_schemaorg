@@ -1,5 +1,11 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Any, List, Optional, Union, TYPE_CHECKING
+from pydantic import StrictInt, StrictFloat, AnyUrl
+from datetime import date, datetime, time
+from decimal import Decimal
+from pydantic_schemaorg.ISO8601.ISO8601Date import ISO8601Date
+from pydantic import Field
 
 from typing import List, Optional, Union
 from datetime import date
@@ -17,19 +23,53 @@ class Legislation(CreativeWork):
     See: https://schema.org/Legislation
     Model depth: 3
     """
-    type_: str = Field(default="Legislation", alias='@type', const=True)
-    legislationPassedBy: Optional[Union[List[Union['Person', 'Organization', str]], 'Person', 'Organization', str]] = Field(
+    valid_name: ClassVar[str] = "Legislation"
+    type_: str = Field("Legislation", alias='@type')
+    legislationResponsible: Optional[Union[List[Union['Person', 'Organization', str]], 'Person', 'Organization', str]] = Field(
         default=None,
-        description="The person or organization that originally passed or made the law : typically parliament"
-     "(for primary legislation) or government (for secondary legislation). This indicates"
-     "the \"legal author\" of the law, as opposed to its physical author.",
+        description="An individual or organization that has some kind of responsibility for the legislation."
+     "Typically the ministry who is/was in charge of elaborating the legislation, or the adressee"
+     "for potential questions about the legislation once it is published.",
     )
-    legislationConsolidates: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
+    legislationCommences: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
         default=None,
-        description="Indicates another legislation taken into account in this consolidated legislation"
-     "(which is usually the product of an editorial process that revises the legislation)."
-     "This property should be used multiple times to refer to both the original version or the"
-     "previous consolidated version, and to the legislations making the change.",
+        description="Another legislation that this one sets into force.",
+    )
+    legislationDate: Optional[Union[List[Union[date, 'Date', str]], date, 'Date', str]] = Field(
+        default=None,
+        description="The date of adoption or signature of the legislation. This is the date at which the text"
+     "is officially aknowledged to be a legislation, even though it might not even be published"
+     "or in force.",
+    )
+    legislationCountersignedBy: Optional[Union[List[Union['Person', 'Organization', str]], 'Person', 'Organization', str]] = Field(
+        default=None,
+        description="The person or organization that countersigned the legislation. Depending on the legal"
+     "context, a countersignature can indicate that the signed authority undertakes to assume"
+     "responsibility for texts emanating from a person who is inviolable and irresponsible,"
+     "(for example a King, Grand Duc or President), or that the authority is in charge of the"
+     "implementation of the text.",
+    )
+    jurisdiction: Optional[Union[List[Union[str, 'Text', 'AdministrativeArea']], str, 'Text', 'AdministrativeArea']] = Field(
+        default=None,
+        description="Indicates a legal jurisdiction, e.g. of some legislation, or where some government"
+     "service is based.",
+    )
+    legislationLegalForce: Optional[Union[List[Union['LegalForceStatus', str]], 'LegalForceStatus', str]] = Field(
+        default=None,
+        description="Whether the legislation is currently in force, not in force, or partially in force.",
+    )
+    legislationEnsuresImplementationOf: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
+        default=None,
+        description="Indicates that this Legislation ensures the implementation of another Legislation,"
+     "for example by modifying national legislations so that they do not contradict to an EU"
+     "regulation or decision. This implies a legal meaning. Transpositions of EU Directive"
+     "should be captured with <a href=\"/legislationTransposes\">legislationTransposes</a>.",
+    )
+    legislationIdentifier: Optional[Union[List[Union[AnyUrl, 'URL', str, 'Text']], AnyUrl, 'URL', str, 'Text']] = Field(
+        default=None,
+        description="An identifier for the legislation. This can be either a string-based identifier, like"
+     "the CELEX at EU level or the NOR in France, or a web-based, URL/URI identifier, like an"
+     "ELI (European Legislation Identifier) or an URN-Lex.",
     )
     legislationChanges: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
         default=None,
@@ -41,21 +81,34 @@ class Legislation(CreativeWork):
      "of the change. For consolidation relationships, use the <a href=\"/legislationConsolidates\">legislationConsolidates</a>"
      "property.",
     )
-    legislationDate: Optional[Union[List[Union[date, 'Date', str]], date, 'Date', str]] = Field(
+    legislationPassedBy: Optional[Union[List[Union['Person', 'Organization', str]], 'Person', 'Organization', str]] = Field(
         default=None,
-        description="The date of adoption or signature of the legislation. This is the date at which the text"
-     "is officially aknowledged to be a legislation, even though it might not even be published"
-     "or in force.",
+        description="The person or organization that originally passed or made the law: typically parliament"
+     "(for primary legislation) or government (for secondary legislation). This indicates"
+     "the \"legal author\" of the law, as opposed to its physical author.",
     )
-    legislationLegalForce: Optional[Union[List[Union['LegalForceStatus', str]], 'LegalForceStatus', str]] = Field(
+    legislationDateOfApplicability: Optional[Union[List[Union[date, 'Date', str]], date, 'Date', str]] = Field(
         default=None,
-        description="Whether the legislation is currently in force, not in force, or partially in force.",
+        description="The date at which the Legislation becomes applicable. This can sometimes be distinct"
+     "from the date of entry into force : a text may come in force today, and state it will become"
+     "applicable in 3 months.",
     )
-    legislationIdentifier: Optional[Union[List[Union[AnyUrl, 'URL', str, 'Text']], AnyUrl, 'URL', str, 'Text']] = Field(
+    legislationDateVersion: Optional[Union[List[Union[date, 'Date', str]], date, 'Date', str]] = Field(
         default=None,
-        description="An identifier for the legislation. This can be either a string-based identifier, like"
-     "the CELEX at EU level or the NOR in France, or a web-based, URL/URI identifier, like an"
-     "ELI (European Legislation Identifier) or an URN-Lex.",
+        description="The point-in-time at which the provided description of the legislation is valid (e.g.:"
+     "when looking at the law on the 2016-04-07 (= dateVersion), I get the consolidation of"
+     "2015-04-12 of the \"National Insurance Contributions Act 2015\")",
+    )
+    legislationConsolidates: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
+        default=None,
+        description="Indicates another legislation taken into account in this consolidated legislation"
+     "(which is usually the product of an editorial process that revises the legislation)."
+     "This property should be used multiple times to refer to both the original version or the"
+     "previous consolidated version, and to the legislations making the change.",
+    )
+    legislationJurisdiction: Optional[Union[List[Union[str, 'Text', 'AdministrativeArea']], str, 'Text', 'AdministrativeArea']] = Field(
+        default=None,
+        description="The jurisdiction from which the legislation originates.",
     )
     legislationTransposes: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
         default=None,
@@ -63,27 +116,6 @@ class Legislation(CreativeWork):
      "by another legislation, by passing appropriate implementation measures. Typically,"
      "some legislations of European Union's member states or regions transpose European"
      "Directives. This indicates a legally binding link between the 2 legislations.",
-    )
-    jurisdiction: Optional[Union[List[Union[str, 'Text', 'AdministrativeArea']], str, 'Text', 'AdministrativeArea']] = Field(
-        default=None,
-        description="Indicates a legal jurisdiction, e.g. of some legislation, or where some government"
-     "service is based.",
-    )
-    legislationResponsible: Optional[Union[List[Union['Person', 'Organization', str]], 'Person', 'Organization', str]] = Field(
-        default=None,
-        description="An individual or organization that has some kind of responsibility for the legislation."
-     "Typically the ministry who is/was in charge of elaborating the legislation, or the adressee"
-     "for potential questions about the legislation once it is published.",
-    )
-    legislationJurisdiction: Optional[Union[List[Union[str, 'Text', 'AdministrativeArea']], str, 'Text', 'AdministrativeArea']] = Field(
-        default=None,
-        description="The jurisdiction from which the legislation originates.",
-    )
-    legislationType: Optional[Union[List[Union[str, 'Text', 'CategoryCode']], str, 'Text', 'CategoryCode']] = Field(
-        default=None,
-        description="The type of the legislation. Examples of values are \"law\", \"act\", \"directive\","
-     "\"decree\", \"regulation\", \"statutory instrument\", \"loi organique\", \"règlement"
-     "grand-ducal\", etc., depending on the country.",
     )
     legislationApplies: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
         default=None,
@@ -94,20 +126,50 @@ class Legislation(CreativeWork):
      "state \"applies\" the consolidated version of the European Directive implemented"
      "in it.",
     )
-    legislationDateVersion: Optional[Union[List[Union[date, 'Date', str]], date, 'Date', str]] = Field(
+    legislationAmends: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
         default=None,
-        description="The point-in-time at which the provided description of the legislation is valid (e.g."
-     ": when looking at the law on the 2016-04-07 (= dateVersion), I get the consolidation of"
-     "2015-04-12 of the \"National Insurance Contributions Act 2015\")",
+        description="Another legislation that this legislation amends, introducing legal changes.",
+    )
+    legislationCorrects: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
+        default=None,
+        description="Another legislation in which this one introduces textual changes, like correction"
+     "of spelling mistakes, with no legal impact (for modifications that have legal impact,"
+     "use <a href=\"/legislationAmends\">legislationAmends</a>).",
+    )
+    legislationRepeals: Optional[Union[List[Union['Legislation', str]], 'Legislation', str]] = Field(
+        default=None,
+        description="Another legislation that this legislation repeals (cancels, abrogates).",
+    )
+    legislationType: Optional[Union[List[Union[str, 'Text', 'CategoryCode']], str, 'Text', 'CategoryCode']] = Field(
+        default=None,
+        description="The type of the legislation. Examples of values are \"law\", \"act\", \"directive\","
+     "\"decree\", \"regulation\", \"statutory instrument\", \"loi organique\", \"règlement"
+     "grand-ducal\", etc., depending on the country.",
     )
     
+
 
 if TYPE_CHECKING:
     from pydantic_schemaorg.Person import Person
     from pydantic_schemaorg.Organization import Organization
     from pydantic_schemaorg.Date import Date
-    from pydantic_schemaorg.LegalForceStatus import LegalForceStatus
-    from pydantic_schemaorg.URL import URL
     from pydantic_schemaorg.Text import Text
     from pydantic_schemaorg.AdministrativeArea import AdministrativeArea
+    from pydantic_schemaorg.LegalForceStatus import LegalForceStatus
+    from pydantic_schemaorg.URL import URL
     from pydantic_schemaorg.CategoryCode import CategoryCode
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

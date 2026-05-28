@@ -1,6 +1,13 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Any, List, Optional, Union, TYPE_CHECKING
+from pydantic import StrictInt, StrictFloat, AnyUrl
+from datetime import date, datetime, time
+from decimal import Decimal
+from pydantic_schemaorg.ISO8601.ISO8601Date import ISO8601Date
+from pydantic import Field
 
+from pydantic import AnyUrl
 from typing import List, Optional, Union
 
 
@@ -15,7 +22,19 @@ class TVSeason(CreativeWorkSeason, CreativeWork):
     See: https://schema.org/TVSeason
     Model depth: 3
     """
-    type_: str = Field(default="TVSeason", alias='@type', const=True)
+    valid_name: ClassVar[str] = "TVSeason"
+    type_: str = Field("TVSeason", alias='@type')
+    titleEIDR: Optional[Union[List[Union[AnyUrl, 'URL', str, 'Text']], AnyUrl, 'URL', str, 'Text']] = Field(
+        default=None,
+        description="An [EIDR](https://eidr.org/) (Entertainment Identifier Registry) [[identifier]]"
+     "representing at the most general/abstract level, a work of film or television. For example,"
+     "the motion picture known as \"Ghostbusters\" has a titleEIDR of \"10.5240/7EC7-228A-510A-053E-CBB8-J\"."
+     "This title (or work) may have several variants, which EIDR calls \"edits\". See [[editEIDR]]."
+     "Since schema.org types like [[Movie]], [[TVEpisode]], [[TVSeason]], and [[TVSeries]]"
+     "can be used for both works and their multiple expressions, it is possible to use [[titleEIDR]]"
+     "alone (for a general description), or alongside [[editEIDR]] for a more edit-specific"
+     "description.",
+    )
     countryOfOrigin: Optional[Union[List[Union['Country', str]], 'Country', str]] = Field(
         default=None,
         description="The country of origin of something, including products as well as creative works such"
@@ -32,6 +51,24 @@ class TVSeason(CreativeWorkSeason, CreativeWork):
     )
     
 
+
 if TYPE_CHECKING:
+    from pydantic_schemaorg.URL import URL
+    from pydantic_schemaorg.Text import Text
     from pydantic_schemaorg.Country import Country
     from pydantic_schemaorg.TVSeries import TVSeries
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

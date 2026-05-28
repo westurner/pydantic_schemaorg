@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import ClassVar
 
 
 from pydantic import Field
@@ -11,7 +12,7 @@ class TransformedContent(MediaManipulationRatingEnumeration):
      "or all of the video has been manipulated to transform the footage itself. This category"
      "includes using tools like the Adobe Suite to change the speed of the video, add or remove"
      "visual elements or dub audio. Deepfakes are also a subset of transformation. For an [[ImageObject]]"
-     "to be transformed content': Adding or deleting visual elements to give the image a different"
+     "to be 'transformed content': Adding or deleting visual elements to give the image a different"
      "meaning with the intention to mislead. For an [[ImageObject]] with embedded text to"
      "be 'transformed content': Adding or deleting visual elements to give the image a different"
      "meaning with the intention to mislead. For an [[AudioObject]] to be 'transformed content':"
@@ -21,5 +22,22 @@ class TransformedContent(MediaManipulationRatingEnumeration):
     See: https://schema.org/TransformedContent
     Model depth: 5
     """
-    type_: str = Field(default="TransformedContent", alias='@type', const=True)
+    valid_name: ClassVar[str] = "TransformedContent"
+    type_: str = Field("TransformedContent", alias='@type')
     
+
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

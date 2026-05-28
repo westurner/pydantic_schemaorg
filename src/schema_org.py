@@ -1,13 +1,25 @@
+"""
+schema_org.py
+"""
 import datetime
+import logging
 import os
+
 from pathlib import Path
-from typing import Dict, Union, Set, List, Tuple, Callable
+from typing import Dict, Union, Set, List, Tuple, Callable, Optional
 
 import jinja2
 
-from constants import data_type_map, PACKAGE_NAME
-from jinja import jinja_env
-from models import PydanticClass, PydanticField, Import
+from src.constants import data_type_map, PACKAGE_NAME
+from src.jinja import jinja_env
+from src.models import PydanticClass, PydanticField, Import
+
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(levelname)-6s\t%(name)-7s\t%(message)s'
+)
+log = logging.getLogger('schema_org')
 
 
 class SchemaOrg:
@@ -76,10 +88,14 @@ class SchemaOrg:
             )
         ]
 
-    def extract_fields(self, name: str) -> (List[PydanticField], List[Import]):
+    def extract_fields(self, name: str) -> tuple[List[PydanticField], List[Import]]:
         fields: List[PydanticField] = []
         imports = self._get_default_imports()
         for key, field in self._fields_for_model(name):
+            if key in (None, "None"):
+                log.debug(('key is None', name))
+                raise Exception(('key is none', name))
+                continue
             field_parent_types = self._get_including_types(field)
 
             field_types = [type_name for type_name in field_parent_types]
@@ -102,7 +118,7 @@ class SchemaOrg:
                 if name != field_type:
                     imports = self.update_imports(
                         imports,
-                        class_path=f"{PACKAGE_NAME}.v1.{field_type}",
+                        class_path=f"{PACKAGE_NAME}.{field_type}",
                         classes_={field_type},
                         type="pydantic_field",
                     )
@@ -159,8 +175,11 @@ class SchemaOrg:
 
     def load_type(self, name: str) -> PydanticClass:
         if name in self.pydantic_classes:
-            print(f"{name} exists, skipping..")
-            return self.pydantic_classes[name]
+            cls = self.pydantic_classes[name]
+            log.log(logging.DEBUG-1, f"{name} exists, skipping..\ncls.name:          %s\ncls.valid_name:    %s", cls.name, cls.valid_name)
+            return cls
+        
+        log.info(('load_type', name))
         try:
             node = self.get_class_by_name(name)
         except KeyError:
@@ -172,7 +191,7 @@ class SchemaOrg:
         for parent in parents:
             imports = self.update_imports(
                 imports,
-                class_path=f"{PACKAGE_NAME}.v1.{parent.valid_name}",
+                class_path=f"{PACKAGE_NAME}.{parent.valid_name}",
                 classes_={parent.valid_name},
                 type="parent",
             )
@@ -188,8 +207,19 @@ class SchemaOrg:
             pydantic_imports=list(filter(lambda x: x.type == 'pydantic_field', imports)),
             forward_refs=forward_refs
         )
+        return self.pydantic_classes[name]
 
-        with open(Path(PACKAGE_NAME) / f"{self.pydantic_classes[name].valid_name}.py", "w") as model_file:
+    @staticmethod
+    def write_type(pydanticClass: PydanticClass, path) -> str:
+        if not pydanticClass:
+            raise ValueError("pydanticClass must not be None")
+        if pydanticClass.valid_name is None:
+            raise Exception("pydanticClass.validName must not be None")
+    
+        python_module_name = pydanticClass.valid_name
+        python_module_path = Path(path) / f"{python_module_name}.py"
+
+        with open(python_module_path, "w") as model_file:
             with open(
                     Path(__file__).parent / "templates" / "model.py.tpl"
             ) as template_file:
@@ -199,10 +229,10 @@ class SchemaOrg:
                     commit=os.getenv("COMMIT"),
                     jinja2_version=jinja2.__version__,
                     timestamp=datetime.datetime.now(),
-                    model=self.pydantic_classes[name],
+                    model=pydanticClass,
                 )
             template.stream(**template_args).dump(model_file)
-        return self.pydantic_classes[name]
+        return {"name": python_module_name, "path": python_module_path}
 
     @staticmethod
     def _filter_forward_refs(forward_refs: List[Import]) -> List[Import]:
@@ -214,7 +244,7 @@ class SchemaOrg:
                 a[forward_ref.classPath] = forward_ref.classes_
         return [Import(type='forward_ref', classPath=k, classes_=v) for k, v in a.items()]
 
-    def extract_parents(self, node) -> (List[PydanticClass], list, int):
+    def extract_parents(self, node) -> tuple[List[PydanticClass], list, int]:
         parent_names = set(
             reference.strip().split(":")[-1]
             for reference in self._to_set(node.get("rdfs:subClassOf", []))
@@ -229,8 +259,11 @@ class SchemaOrg:
         parents: List[PydanticClass] = []
         forward_refs = []
         for parent_name in parent_names:
-            parent = self.load_type(parent_name)
-            parents.append(self.load_type(parent_name))
+            try:
+                parent = self.load_type(parent_name)
+            except ValueError:
+                continue
+            parents.append(parent)
             forward_refs += parent.field_imports + parent.forward_refs
 
         parent_depth = next(
@@ -253,9 +286,14 @@ class SchemaOrg:
 
     @staticmethod
     def _get_default_imports() -> List[Import]:
-        return [Import(classes_={"Field"}, classPath="pydantic.v1", type="parent")]
+        return [Import(classes_={"Field"}, classPath="pydantic", type="parent")]
 
     def write_init(self):
+        # # After all classes are generated, rebuild each model class once
+        # for cls in self.pydantic_classes.values():
+        #     # Only call model_rebuild if the class has the method
+        #     if hasattr(cls, "model_rebuild"):
+        #         cls.model_rebuild()
         with open(Path(PACKAGE_NAME) / "__init__.py", "w") as init_file:
             with open(
                     Path(__file__).parent / "templates" / "__init__.py.tpl"
@@ -285,6 +323,15 @@ class SchemaOrg:
                     jinja2_version=jinja2.__version__,
                     timestamp=datetime.datetime.now(),
                     type_map=data_type_map,
-                    pydantic_classes={k: v for k, v in self.pydantic_classes.items()}
+                    pydantic_classes={k: v for k, v in sorted(self.pydantic_classes.items())}
                 )
             template.stream(**template_args).dump(type_file)
+
+
+    # def sort_pydantic_classes(pydantic_classes):
+    #     # sort like this:
+    #     # 1. schema.org primitives like Number, Text
+    #     # 2. schema.org Thing
+    #     # 3. schema.org [... everything else sorted() ...]
+    #     pass
+

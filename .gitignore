@@ -3,3 +3,5 @@ venv
 dist
 src/circ_import
 __pycache__/
+.vscode/
+reports/

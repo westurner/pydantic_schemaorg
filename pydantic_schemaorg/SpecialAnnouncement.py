@@ -1,8 +1,14 @@
 from __future__ import annotations
-from typing import TYPE_CHECKING
+from typing import ClassVar
+from typing import Any, List, Optional, Union, TYPE_CHECKING
+from pydantic import StrictInt, StrictFloat, AnyUrl
+from datetime import date, datetime, time
+from decimal import Decimal
+from pydantic_schemaorg.ISO8601.ISO8601Date import ISO8601Date
+from pydantic import Field
 
-from typing import List, Optional, Union
 from pydantic import AnyUrl
+from typing import List, Optional, Union
 from datetime import date, datetime
 
 
@@ -50,53 +56,22 @@ class SpecialAnnouncement(CreativeWork):
      "using [[about]] only for representing non-location entities (e.g. a [[Course]] or"
      "a [[RadioStation]]). For places, use [[announcementLocation]] and [[spatialCoverage]]."
      "Consumers of this markup should be aware that the initial design encouraged the use of"
-     "/about for locations too. The basic content of [[SpecialAnnouncement]] is similar"
+     "[[about]] for locations too. The basic content of [[SpecialAnnouncement]] is similar"
      "to that of an [RSS](https://en.wikipedia.org/wiki/RSS) or [Atom](https://en.wikipedia.org/wiki/Atom_(Web_standard))"
      "feed. For publishers without such feeds, basic feed-like information can be shared"
      "by posting [[SpecialAnnouncement]] updates in a page, e.g. using JSON-LD. For sites"
      "with Atom/RSS functionality, you can point to a feed with the [[webFeed]] property."
      "This can be a simple URL, or an inline [[DataFeed]] object, with [[encodingFormat]]"
-     "providing media type information e.g. \"application/rss+xml\" or \"application/atom+xml\".
+     "providing media type information, e.g. \"application/rss+xml\" or \"application/atom+xml\".
 
     See: https://schema.org/SpecialAnnouncement
     Model depth: 3
     """
-    type_: str = Field(default="SpecialAnnouncement", alias='@type', const=True)
-    announcementLocation: Optional[Union[List[Union['LocalBusiness', 'CivicStructure', str]], 'LocalBusiness', 'CivicStructure', str]] = Field(
-        default=None,
-        description="Indicates a specific [[CivicStructure]] or [[LocalBusiness]] associated with the"
-     "SpecialAnnouncement. For example, a specific testing facility or business with special"
-     "opening hours. For a larger geographic region like a quarantine of an entire region,"
-     "use [[spatialCoverage]].",
-    )
-    quarantineGuidelines: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
-        default=None,
-        description="Guidelines about quarantine rules, e.g. in the context of a pandemic.",
-    )
-    governmentBenefitsInfo: Optional[Union[List[Union['GovernmentService', str]], 'GovernmentService', str]] = Field(
-        default=None,
-        description="governmentBenefitsInfo provides information about government benefits associated"
-     "with a SpecialAnnouncement.",
-    )
-    diseaseSpreadStatistics: Optional[Union[List[Union[AnyUrl, 'URL', 'Observation', 'WebContent', 'Dataset', str]], AnyUrl, 'URL', 'Observation', 'WebContent', 'Dataset', str]] = Field(
-        default=None,
-        description="Statistical information about the spread of a disease, either as [[WebContent]], or"
-     "described directly as a [[Dataset]], or the specific [[Observation]]s in the dataset."
-     "When a [[WebContent]] URL is provided, the page indicated might also contain more such"
-     "markup.",
-    )
+    valid_name: ClassVar[str] = "SpecialAnnouncement"
+    type_: str = Field("SpecialAnnouncement", alias='@type')
     travelBans: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
         default=None,
         description="Information about travel bans, e.g. in the context of a pandemic.",
-    )
-    category: Optional[Union[List[Union[AnyUrl, 'URL', str, 'Text', 'PhysicalActivityCategory', 'Thing']], AnyUrl, 'URL', str, 'Text', 'PhysicalActivityCategory', 'Thing']] = Field(
-        default=None,
-        description="A category for the item. Greater signs or slashes can be used to informally indicate a"
-     "category hierarchy.",
-    )
-    schoolClosuresInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
-        default=None,
-        description="Information about school closures.",
     )
     datePosted: Optional[Union[List[Union[datetime, 'DateTime', date, 'Date', str]], datetime, 'DateTime', date, 'Date', str]] = Field(
         default=None,
@@ -107,37 +82,86 @@ class SpecialAnnouncement(CreativeWork):
         description="The URL for a feed, e.g. associated with a podcast series, blog, or series of date-stamped"
      "updates. This is usually RSS or Atom.",
     )
+    publicTransportClosuresInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
+        default=None,
+        description="Information about public transport closures.",
+    )
     gettingTestedInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
         default=None,
         description="Information about getting tested (for a [[MedicalCondition]]), e.g. in the context"
      "of a pandemic.",
+    )
+    diseasePreventionInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
+        default=None,
+        description="Information about disease prevention.",
+    )
+    quarantineGuidelines: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
+        default=None,
+        description="Guidelines about quarantine rules, e.g. in the context of a pandemic.",
+    )
+    category: Optional[Union[List[Union[AnyUrl, 'URL', str, 'Text', 'Thing', 'PhysicalActivityCategory', 'CategoryCode']], AnyUrl, 'URL', str, 'Text', 'Thing', 'PhysicalActivityCategory', 'CategoryCode']] = Field(
+        default=None,
+        description="A category for the item. Greater signs or slashes can be used to informally indicate a"
+     "category hierarchy.",
+    )
+    diseaseSpreadStatistics: Optional[Union[List[Union[AnyUrl, 'URL', 'Dataset', 'WebContent', 'Observation', str]], AnyUrl, 'URL', 'Dataset', 'WebContent', 'Observation', str]] = Field(
+        default=None,
+        description="Statistical information about the spread of a disease, either as [[WebContent]], or"
+     "described directly as a [[Dataset]], or the specific [[Observation]]s in the dataset."
+     "When a [[WebContent]] URL is provided, the page indicated might also contain more such"
+     "markup.",
+    )
+    announcementLocation: Optional[Union[List[Union['LocalBusiness', 'CivicStructure', str]], 'LocalBusiness', 'CivicStructure', str]] = Field(
+        default=None,
+        description="Indicates a specific [[CivicStructure]] or [[LocalBusiness]] associated with the"
+     "SpecialAnnouncement. For example, a specific testing facility or business with special"
+     "opening hours. For a larger geographic region like a quarantine of an entire region,"
+     "use [[spatialCoverage]].",
+    )
+    governmentBenefitsInfo: Optional[Union[List[Union['GovernmentService', str]], 'GovernmentService', str]] = Field(
+        default=None,
+        description="governmentBenefitsInfo provides information about government benefits associated"
+     "with a SpecialAnnouncement.",
     )
     newsUpdatesAndGuidelines: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
         default=None,
         description="Indicates a page with news updates and guidelines. This could often be (but is not required"
      "to be) the main page containing [[SpecialAnnouncement]] markup on a site.",
     )
-    publicTransportClosuresInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
+    schoolClosuresInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
         default=None,
-        description="Information about public transport closures.",
-    )
-    diseasePreventionInfo: Optional[Union[List[Union[AnyUrl, 'URL', 'WebContent', str]], AnyUrl, 'URL', 'WebContent', str]] = Field(
-        default=None,
-        description="Information about disease prevention.",
+        description="Information about school closures.",
     )
     
 
+
 if TYPE_CHECKING:
-    from pydantic_schemaorg.LocalBusiness import LocalBusiness
-    from pydantic_schemaorg.CivicStructure import CivicStructure
     from pydantic_schemaorg.URL import URL
     from pydantic_schemaorg.WebContent import WebContent
-    from pydantic_schemaorg.GovernmentService import GovernmentService
-    from pydantic_schemaorg.Observation import Observation
-    from pydantic_schemaorg.Dataset import Dataset
-    from pydantic_schemaorg.Text import Text
-    from pydantic_schemaorg.PhysicalActivityCategory import PhysicalActivityCategory
-    from pydantic_schemaorg.Thing import Thing
     from pydantic_schemaorg.DateTime import DateTime
     from pydantic_schemaorg.Date import Date
     from pydantic_schemaorg.DataFeed import DataFeed
+    from pydantic_schemaorg.Text import Text
+    from pydantic_schemaorg.Thing import Thing
+    from pydantic_schemaorg.PhysicalActivityCategory import PhysicalActivityCategory
+    from pydantic_schemaorg.CategoryCode import CategoryCode
+    from pydantic_schemaorg.Dataset import Dataset
+    from pydantic_schemaorg.Observation import Observation
+    from pydantic_schemaorg.LocalBusiness import LocalBusiness
+    from pydantic_schemaorg.CivicStructure import CivicStructure
+    from pydantic_schemaorg.GovernmentService import GovernmentService
+
+
+def __getattr__(name: str) -> Any:
+    from pydantic_schemaorg.__types__ import types
+    if name in types:
+        import sys
+        mod_name = types[name][1]
+        mod = sys.modules.get(mod_name)
+        if not mod:
+            __import__(mod_name, fromlist=[name])
+            mod = sys.modules[mod_name]
+        val = getattr(mod, name)
+        globals()[name] = val
+        return val
+    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")

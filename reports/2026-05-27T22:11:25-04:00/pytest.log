@@ -1,0 +1,21 @@
+============================= test session starts ==============================
+platform linux -- Python 3.13.13, pytest-8.3.5, pluggy-1.5.0
+rootdir: /var/home/wturner/-wrk/-ve311/pydantic_schemaorg/src/pydantic_schemaorg
+configfile: pyproject.toml
+testpaths: src, pydantic_schemaorg
+plugins: cov-7.1.0, anyio-4.13.0
+collected 1470 items
+
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997] PASSED          [  0%]
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997-07] PASSED       [  0%]
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997-07-16] PASSED    [  0%]
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997-07-16T19:20+01:00] PASSED [  0%]
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997-07-16T19:20:30+01:00] PASSED [  0%]
+src/ISO8601/test_ISO8601Date.py::test_iso8601_date[1997-07-16T19:20:30.45+01:00] PASSED [  0%]
+src/test_classes.py::test_schemaorg_examples 
+-------------------------------- live log setup --------------------------------
+DEBUG    main:main.py:47 get_from_disk_or_http called with url=https://raw.githubusercontent.com/schemaorg/schemaorg/main/data/releases/30.0/schemaorg-all-examples.txt, filename=None, cache_dir=/var/home/wturner/-wrk/-ve311/pydantic_schemaorg/src/pydantic_schemaorg/src/schema, text=True
+DEBUG    main:main.py:53 filename not provided. defaulting to basename(url): schemaorg-all-examples.txt
+DEBUG    main:main.py:60 Checking for cached file at /var/home/wturner/-wrk/-ve311/pydantic_schemaorg/src/pydantic_schemaorg/src/schema/schemaorg-all-examples.txt
+INFO     main:main.py:62 Reading from cache: /var/home/wturner/-wrk/-ve311/pydantic_schemaorg/src/pydantic_schemaorg/src/schema/schemaorg-all-examples.txt
+DEBUG    main:main.py:64 Reading cached data as UTF-8 text

@@ -15,11 +15,23 @@ documentation = "https://github.com/lexiq-legal/pydantic_schemaorg"
 
 keywords = ["schema.org", "pydantic"]
 
+packages = [
+    { include = "pydantic_schemaorg" },
+    { include = "src", from = "", to = "pydantic_schemaorg_builder" }
+]
+
+[tool.poetry.scripts]
+pydantic_schemaorg = 'src.main:main'
+
 [tool.poetry.dependencies]
-pydantic = "^1.8.2"
+python = ">=3.8"
+pydantic = ">2.0.0"
+#pydantic = "^2.10.6"
 
 [tool.poetry.group.dev.dependencies]
 ruff = "^0.12.0"
+pytest = '>2.0.0'
+pytest-cov = '^5.0.0'
 
 [build-system]
 requires = [
@@ -28,3 +40,15 @@ requires = [
     "poetry-core>1.1.9"
 ]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+#addopts = "--tb=short"
+#addopts = "--tb=short -rA"
+#addopts = "--tb=short -rA -p no:logging"
+#addopts = "--tb=short -rA --capture=tee-sys"
+addopts = "--tb=short -rA --capture=tee-sys --show-capture=all"
+# testpaths = ["src"]
+testpaths = ["src", "pydantic_schemaorg"]
+log_cli = true
+log_cli_level = "DEBUG"
+#log_cli_level = "INFO"

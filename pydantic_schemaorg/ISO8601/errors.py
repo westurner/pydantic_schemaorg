@@ -1,9 +1,6 @@
-from pydantic import PydanticValueError
-
-
-class ISO8601DateError(PydanticValueError):
+class ISO8601DateError(ValueError):
     code = 'ISO9801'
 
 
-class ISO8601DateInvalid(PydanticValueError):
+class ISO8601DateInvalid(ValueError):
     code = 'ISO9801 invalid date'
