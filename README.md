@@ -33,3 +33,14 @@ print(scholarly_article.json())
 ```
 {"@type": "ScholarlyArticle", "url": "https://github.com/lexiq-legal/pydantic_schemaorg", "sameAs": "https://github.com/lexiq-legal/pydantic_schemaorg", "copyrightNotice": "Free to use under the MIT license", "dateCreated": "15-12-2021"}
 ```
+
+## Running tests
+
+Install the development requirements and run:
+
+```bash
+make test
+```
+
+This runs `pytest` with coverage for `pydantic_schemaorg` and writes the HTML coverage report to
+`reports/<timestamp>/htmlcov/index.html`.

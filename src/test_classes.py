@@ -3,8 +3,7 @@ import inspect
 import json
 import os
 import re
-from collections import Iterator
-from typing import Dict, List, Union
+from typing import Dict, Iterator, List, Union
 
 import requests
 from requests import Response
@@ -43,20 +42,25 @@ def get_all_examples() -> Iterator[Union[List, Dict]]:
         yield b
 
 
-for example in get_all_examples():
-    if type(example) == dict and type(example.get('@type')) != list:
-        type_ = example.get('@type','').split(':')[-1]
-        if not type_:
-            print(f'Not a type: {type_}')
-            continue
-        try:
-            mod = __import__(f'pydantic_schemaorg.{type_}', fromlist=[f'{type_}'])
-            class_ = getattr(mod, f'{type_}')
-            model = class_.__call__(**example)
-            print(f'Success for {type_}', model.json())
-        except Exception as e:
-            print(f'Exception for type {type_}', e)
+def main():
+    for example in get_all_examples():
+        if type(example) == dict and type(example.get('@type')) != list:
+            type_ = example.get('@type','').split(':')[-1]
+            if not type_:
+                print(f'Not a type: {type_}')
+                continue
+            try:
+                mod = __import__(f'pydantic_schemaorg.{type_}', fromlist=[f'{type_}'])
+                class_ = getattr(mod, f'{type_}')
+                model = class_.__call__(**example)
+                print(f'Success for {type_}', model.json())
+            except Exception as e:
+                print(f'Exception for type {type_}', e)
 
-for module in get_modules_in_package(dir, "pydantic_schemaorg"):
-    module._update_all_fields()
-    module.__call__()
+    for module in get_modules_in_package(dir, "pydantic_schemaorg"):
+        module._update_all_fields()
+        module.__call__()
+
+
+if __name__ == "__main__":
+    main()
