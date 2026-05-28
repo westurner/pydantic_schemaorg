@@ -32,6 +32,7 @@ def copy_utils():
     for file in os.listdir(f'{THIS_PATH}/ISO8601'):
         if file.endswith('.py'):
             shutil.copy(f'{THIS_PATH}/ISO8601/{file}', f'{PACKAGE_NAME}/ISO8601')
+    shutil.copy(f'{THIS_PATH}/utils.py', f'{PACKAGE_NAME}/utils.py')
 
 
 def init_package():

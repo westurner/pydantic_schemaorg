@@ -1,4 +1,5 @@
 from __future__ import annotations
+from typing import Literal
 {%- if model.pydantic_imports %}
 from typing import TYPE_CHECKING
 {%- endif %}
@@ -18,7 +19,7 @@ class {{ model.valid_name }}({{model.parents| sort(attribute='depth', reverse=Tr
     See: https://schema.org/{{ model.name }}
     Model depth: {{model.depth}}
     """
-    type_: str = Field(default="{{ model.name }}", alias='@type', const=True)
+    type_: Literal["{{ model.name }}"] = Field(default="{{ model.name }}", alias='@type')
     {% for field in model.fields -%}
     {{ field.valid_name }}: {{ field.type }} = Field(
         default=None,
