@@ -6,4 +6,4 @@ REPORT_DIR ?= reports/$(shell date -Is | sed 's/:/-/g')
 
 test:
 	mkdir -p $(REPORT_DIR)
-	$(PYTHON) -m pytest --cov=$(PACKAGE_NAME) --cov-report=html:$(REPORT_DIR)/htmlcov --cov-report=json:$(REPORT_DIR)/results.json
+	$(PYTHON) -m pytest --cov=$(PACKAGE_NAME) --cov-report=term:$(REPORT_DIR)/results.log --cov-report=json:$(REPORT_DIR)/results.json
