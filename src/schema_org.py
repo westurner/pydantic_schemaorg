@@ -26,7 +26,7 @@ class SchemaOrg:
         return [
             k.strip().split(":")[-1]
             for k, v in self.schema_org.items()
-            if v["@type"] != "rdf:Property"
+            if k.startswith("schema:") and v["@type"] != "rdf:Property"
         ]
 
     def get_class_by_name(self, name: str) -> Dict:
@@ -63,6 +63,7 @@ class SchemaOrg:
         return [
             incl_type.strip().split(":")[-1]
             for incl_type in self._to_set(field.get("schema:rangeIncludes"))
+            if incl_type.startswith("schema:")
         ]
 
     # Return all fields that belong to model
@@ -218,6 +219,7 @@ class SchemaOrg:
         parent_names = set(
             reference.strip().split(":")[-1]
             for reference in self._to_set(node.get("rdfs:subClassOf", []))
+            if reference.startswith("schema:")
         )
 
         node_types = node["@type"] if type(node["@type"]) == list else [node["@type"]]

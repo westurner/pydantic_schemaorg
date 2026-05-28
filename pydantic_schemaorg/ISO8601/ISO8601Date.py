@@ -1,17 +1,7 @@
 import re
 from typing import no_type_check, Optional, Dict, cast, Any, Pattern, TYPE_CHECKING, Generator, AnyStr, Union
 
-from pydantic import BaseConfig
-from pydantic.fields import ModelField
-from pydantic.utils import update_not_none
-from pydantic.validators import str_validator, constr_length_validator
-
 from pydantic_schemaorg.ISO8601 import errors
-
-if TYPE_CHECKING:
-    from pydantic.typing import AnyCallable
-
-    CallableGenerator = Generator[AnyCallable, None, None]
 
 _url_regex_cache: Union[Pattern[AnyStr], None] = None
 
@@ -29,6 +19,20 @@ def ISO8601Date_regex() -> Pattern[str]:
 
 
 class ISO8601Date(str):
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        import pydantic
+        from pydantic import GetCoreSchemaHandler
+        from pydantic_core import core_schema
+        def validate_iso8601(value):
+            if isinstance(value, cls):
+                return value
+            value = str(value)
+            m = ISO8601Date_regex().match(value)
+            if not m:
+                raise ValueError(f"Invalid ISO8601 date: {value}")
+            return cls(value)
+        return core_schema.no_info_plain_validator_function(validate_iso8601)
     strip_whitespace = True
     min_length = 1
     max_length = 2 ** 16
@@ -37,31 +41,25 @@ class ISO8601Date(str):
 
     @no_type_check
     def __new__(cls, date: Optional[str], **kwargs) -> object:
-        return str.__new__(cls, cls.build(**kwargs) if date is None else date)
+        obj = str.__new__(cls, cls.build(**kwargs) if date is None else date)
+        # Optionally, parse and attach fields here if needed
+        return obj
 
-    def __init__(
-            self,
-            date: str,
-            *,
-            year: Optional[int] = None,
-            month: Optional[int] = None,
-            day: Optional[int] = None,
-            hour: Optional[int] = None,
-            minute: Optional[int] = None,
-            second: Optional[int] = None,
-            microsecond: Optional[int] = None,
-            tz: Optional[str] = None,
-    ) -> None:
-        str.__init__(date)
-        self.date = date
-        self.year = year
-        self.month = month
-        self.day = day
-        self.hour = hour
-        self.minute = minute
-        self.second = second
-        self.microsecond = microsecond
-        self.tz = tz
+    @classmethod
+    def __get_pydantic_core_schema__(cls, source_type, handler):
+        from pydantic_core import core_schema
+        def validate_iso8601(value):
+            if isinstance(value, cls):
+                return value
+            value = str(value)
+            m = ISO8601Date_regex().match(value)
+            if not m:
+                raise ValueError(f"Invalid ISO8601 date: {value}")
+            return cls(value)
+        return core_schema.json_or_python_schema(
+            core_schema.no_info_plain_validator_function(validate_iso8601),
+            core_schema.no_info_plain_validator_function(validate_iso8601)
+        )
 
     @classmethod
     def build(
@@ -95,67 +93,56 @@ class ISO8601Date(str):
                                     date += '.' + str(microsecond)
         return date
 
+<<<<<<< HEAD
     @classmethod
-    def __modify_schema__(cls, field_schema: Dict[str, Any]) -> None:
-        update_not_none(field_schema, minLength=cls.min_length, maxLength=cls.max_length, format='ISO8601')
+    def __get_pydantic_core_schema__(cls, source_type, handler) -> Any:
+        from pydantic_core import core_schema
+        def validate_iso8601(value):
+            if isinstance(value, cls):
+                return value
+            value = str(value)
+            if cls.strip_whitespace:
+                value = value.strip()
+            m = ISO8601Date_regex().match(value)
+            if not m:
+                raise ValueError(f"Invalid ISO8601 date: {value}")
+            return cls(value)
+        return core_schema.json_or_python_schema(
+            core_schema.no_info_plain_validator_function(validate_iso8601),
+            core_schema.no_info_plain_validator_function(validate_iso8601)
+        )
 
     @classmethod
-    def __get_validators__(cls) -> 'CallableGenerator':
-        yield cls.validate
+    def __get_pydantic_json_schema__(cls, core_schema, handler) -> Any:
+=======
 
+    @classmethod
+    def __get_pydantic_json_schema__(cls, core_schema, handler):
+>>>>>>> c251655 (REF:  utilities for dynamic model building, ISO8601Date class and error handling;)
+        schema = handler(core_schema)
+        schema.update({
+            "minLength": cls.min_length,
+            "maxLength": cls.max_length,
+            "format": "ISO8601"
+        })
+        return schema
+
+<<<<<<< HEAD
+    @classmethod
+    def validate_parts(cls, parts: Dict[str, str]) -> Dict[str, Union[str, int]]:
+=======
     def validate_iso_date(self, value: Any):
-        value = str_validator(value)
+        value = str(value)
         if self.__class__.strip_whitespace:
             value = value.strip()
         m = ISO8601Date_regex().match(value)
         assert m, 'ISO8601Date regex failed unexpectedly'
-
         parts = m.groupdict()
         parts = self.__class__.validate_parts(parts)
 
-    @classmethod
-    def validate(cls, value: Any, field: 'ModelField', config: 'BaseConfig') -> 'ISO8601Date':
-        if value.__class__ == cls:
-            return value
-        value = str_validator(value)
-        if cls.strip_whitespace:
-            value = value.strip()
-        date: str = cast(str, constr_length_validator(value, field, config))
-
-        m = ISO8601Date_regex().match(date)
-        assert m, 'ISO8601Date regex failed unexpectedly'
-
-        parts = m.groupdict()
-        parts = cls.validate_parts(parts)
-
-        if m.end() != len(date):
-            raise ValueError()
-
-        return cls(
-            date,
-            year=parts['year'],
-            month=parts['month'],
-            day=parts['day'],
-            hour=parts['hour'],
-            minute=parts['minute'],
-            second=parts['second'],
-            microsecond=parts['microsecond'],
-            tz=parts['tz'],
-        )
-
-    @classmethod
-    def validate_parts(cls, parts: Dict[str, str]) -> Dict[str, Union[str, int]]:
+    @no_type_check
+    def __new__(cls, date: Optional[str], **kwargs) -> object:
+        obj = str.__new__(cls, cls.build(**kwargs) if date is None else date)
+        return obj
+>>>>>>> c251655 (REF:  utilities for dynamic model building, ISO8601Date class and error handling;)
         """
-        A method used to validate parts of an ISO8601.
-        """
-        parts_order = ['year', 'month', 'day', 'hour', 'minute', 'second', 'microsecond', 'tz']
-        year = parts['year']
-        if year is None:
-            raise errors.ISO8601DateInvalid()
-
-        for part_order in parts_order:
-            parts[part_order] = parts.get(part_order, None)
-            if parts[part_order] is not None and part_order != 'tz':
-                parts[part_order] = int(parts[part_order])
-
-        return parts
